@@ -7,3 +7,6 @@
 - Vistas listar.jsp y form.jsp.
 
 <p>Debe quedar de la siguiente forma:</p>
+
+<p align="center"><img width="719" alt="image" src="https://github.com/user-attachments/assets/338a52fa-3197-4fff-9c0e-b2d908db34a8"></p>
+<p align="center"><img width="719" alt="image" src="https://github.com/user-attachments/assets/667f832c-3d72-4362-b983-e6a52088003c"></p>
