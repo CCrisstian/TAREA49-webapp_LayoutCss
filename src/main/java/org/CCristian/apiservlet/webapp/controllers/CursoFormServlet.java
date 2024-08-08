@@ -36,6 +36,7 @@ public class CursoFormServlet extends HttpServlet {
             }
         }
         req.setAttribute("curso", curso); /*Pasar el curso y asignarlo como atributo del request */
+        req.setAttribute("title", req.getAttribute("title") + "Formulario de Cursos");
         getServletContext().getRequestDispatcher("/form.jsp").forward(req, resp);   /*Pasar el curso a form.jsp*/
     }
 
@@ -86,6 +87,7 @@ public class CursoFormServlet extends HttpServlet {
         } else {
             req.setAttribute("errores", errores);
             req.setAttribute("curso", curso); /*Pasar el curso con Errores y asignarlo como atributo del request */
+            req.setAttribute("title", req.getAttribute("title") + "Formulario de Cursos");
             getServletContext().getRequestDispatcher("/form.jsp").forward(req, resp);   /*Enviar el curso con Errores a form.jsp*/
         }
     }
