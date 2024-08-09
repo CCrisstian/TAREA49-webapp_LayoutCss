@@ -2,6 +2,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
 <jsp:include page="layout/header.jsp" />
+
+<div class="container text-center mt-4">
 <h1>${title}</h1>
 <a class="btn btn-secondary" href="${pageContext.request.contextPath}/cursos">Volver</a>
 <form action="${pageContext.request.contextPath}/cursos/form" method="post" class="p-3">
@@ -47,4 +49,5 @@
         </div>
     </div>
 </form>
+</div>
 <jsp:include page="layout/footer.jsp" />
