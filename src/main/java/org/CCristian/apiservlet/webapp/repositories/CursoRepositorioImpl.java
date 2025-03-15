@@ -18,7 +18,11 @@ public class CursoRepositorioImpl implements Repositorio<Curso> {
     public List<Curso> listar() throws SQLException {
         List<Curso> cursos = new ArrayList<>();
         try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery("SELECT * FROM cursos AS c ORDER BY c.id")) {
+             // Consulta SQL con JOIN para obtener el nombre del instructor
+             ResultSet rs = stmt.executeQuery("SELECT c.id, c.nombre, c.descripcion, c.duracion, i.nombre AS instructor " +
+                     "FROM cursos AS c " +
+                     "JOIN instructores AS i ON c.instructor_id = i.id " +
+                     "ORDER BY c.id")) {
             while (rs.next()) {
                 Curso curso = getCurso(rs);
                 cursos.add(curso);
@@ -30,7 +34,10 @@ public class CursoRepositorioImpl implements Repositorio<Curso> {
     @Override
     public List<Curso> porNombre(String nombre) throws SQLException {
         List<Curso> cursos = new ArrayList<>();
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM cursos as c WHERE c.nombre like ?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT c.id, c.nombre, c.descripcion, c.duracion, i.nombre AS instructor " +
+                "FROM cursos AS c " +
+                "JOIN instructores AS i ON c.instructor_id = i.id " +
+                "WHERE c.nombre LIKE ?")) {
             stmt.setString(1, "%" + nombre + "%");
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -44,20 +51,40 @@ public class CursoRepositorioImpl implements Repositorio<Curso> {
     @Override
     public void guardar(Curso curso) throws SQLException {
         String sql;
+        int instructorId = obtenerInstructorIdPorNombre(curso.getInstructor()); // Obtenemos el instructor_id
+
         if (curso.getId() > 0) {
-            sql = "UPDATE cursos SET nombre=?, descripcion=?, instructor=?, duracion=? WHERE id=?";
+            // Si el curso ya existe, actualizamos
+            sql = "UPDATE cursos SET nombre=?, descripcion=?, instructor_id=?, duracion=? WHERE id=?";
         } else {
-            sql = "INSERT INTO cursos (nombre, descripcion, instructor, duracion) VALUES(?,?,?,?)";
+            // Si el curso es nuevo, lo insertamos
+            sql = "INSERT INTO cursos (nombre, descripcion, instructor_id, duracion) VALUES(?,?,?,?)";
         }
+
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, curso.getNombre());
             stmt.setString(2, curso.getDescripcion());
-            stmt.setString(3, curso.getInstructor());
+            stmt.setInt(3, instructorId); // Usamos el instructor_id obtenido
             stmt.setFloat(4, curso.getDuracion());
+
             if (curso.getId() > 0) {
                 stmt.setInt(5, curso.getId());
             }
             stmt.executeUpdate();
+        }
+    }
+
+    private int obtenerInstructorIdPorNombre(String instructorNombre) throws SQLException {
+        String sql = "SELECT id FROM instructores WHERE nombre = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, instructorNombre);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                } else {
+                    throw new SQLException("Instructor no encontrado: " + instructorNombre);
+                }
+            }
         }
     }
 
@@ -73,7 +100,10 @@ public class CursoRepositorioImpl implements Repositorio<Curso> {
     @Override
     public Curso porId(int id) throws SQLException {
         Curso curso = null;
-        try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM cursos AS c WHERE c.id=?")) {
+        try (PreparedStatement stmt = conn.prepareStatement("SELECT c.id, c.nombre, c.descripcion, c.duracion, i.nombre AS instructor " +
+                "FROM cursos AS c " +
+                "JOIN instructores AS i ON c.instructor_id = i.id " +
+                "WHERE c.id=?")) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -89,7 +119,7 @@ public class CursoRepositorioImpl implements Repositorio<Curso> {
         c.setId(rs.getInt("id"));
         c.setNombre(rs.getString("nombre"));
         c.setDescripcion(rs.getString("descripcion"));
-        c.setInstructor(rs.getString("instructor"));
+        c.setInstructor(rs.getString("instructor")); // Ahora obtenemos el nombre del instructor
         c.setDuracion(rs.getFloat("duracion"));
         return c;
     }
